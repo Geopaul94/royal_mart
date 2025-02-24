@@ -1,70 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:royalmart/data/model/product.dart';
-import 'package:royalmart/data/repository/fetch_products.dart';
-import 'package:royalmart/data/repository/photo_fetching.dart';
+
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
+import 'package:royalmart/data/model/product_model.dart';
+
 import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_bloc.dart';
 import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_event.dart';
 import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_state.dart';
-import 'package:royalmart/presentation/bloc/photos/photos_bloc.dart';
-import 'package:royalmart/presentation/screens/h.dart';
 
-import 'package:royalmart/presentation/screens/splash_screen.dart';
+import 'package:royalmart/presentation/screens/cart_screen.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
+import 'package:royalmart/presentation/screens/product_details.dart';
 
-// class MyApp extends StatelessWidget {
-//   final PexelsApiService pexelsApiService = PexelsApiService();
-
-//   final ApiService apiService = ApiService();
-//   MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return ScreenUtilInit(
-//       designSize: const Size(392, 802),
-//       minTextAdapt: true,
-//       splitScreenMode: true,
-//       builder: (context, child) {
-//         return MultiBlocProvider(
-//             providers: [
-//               BlocProvider(
-//                 create: (context) => ImageBloc(pexelsApiService),
-//               ),
-//               BlocProvider(
-//                 create: (context) => FetchProductsBloc(apiService: apiService),
-//               ),
-//             ],
-//             child: MaterialApp(
-//                 debugShowCheckedModeBanner: false,
-//                 title: 'Royal Mart',
-//                 theme: ThemeData(),
-//                 home: samplescreen()));
-//       },
-//     );
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_bloc.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:royalmart/presentation/screens/wishlist_screen.dart';
+import 'package:royalmart/presentation/widgets/shimmer_loading.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() {
   runApp(MyApp());
@@ -73,199 +27,451 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => CartWishlistBloc(),
-      child: MaterialApp(
-        title: 'Fake Store App',
-        home: ProductListScreen(),
+    return ScreenUtilInit(
+      designSize: const Size(392, 802), // Standard mobile size
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return BlocProvider(
+          create: (context) => CartWishlistBloc(),
+          child: MaterialApp(
+            home: Samplescreen(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class Samplescreen extends StatefulWidget {
+  const Samplescreen({super.key});
+
+  @override
+  State<Samplescreen> createState() => _SamplescreenState();
+}
+
+class _SamplescreenState extends State<Samplescreen> {
+  int selectedIndex = 0;
+  bool isSearching = false; // Toggle search bar visibility
+  String searchQuery = ''; // Store search input
+
+  void onSelected(int index) {
+    setState(() {
+      selectedIndex = index;
+      isSearching = false; // Reset search when switching tabs
+    });
+  }
+
+  void toggleSearch() {
+    setState(() {
+      isSearching = !isSearching;
+      searchQuery = ''; // Clear query when toggling
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CartWishlistBloc, CartWishlistState>(
+      builder: (context, state) {
+        int wishlistCount = 0;
+        int cartCount = 0;
+        List<ProductModel> filteredProducts = []; // For search results
+        if (state is CartWishlistSuccess) {
+          wishlistCount = state.wishlist.length;
+          cartCount = state.cart.length;
+          // Filter products based on search query
+          filteredProducts = searchQuery.isEmpty
+              ? state.products
+              : state.products
+                  .where((product) => product.title!
+                      .toLowerCase()
+                      .contains(searchQuery.toLowerCase()))
+                  .toList();
+        }
+
+        return Scaffold(
+          appBar: CustomAppBar(
+            wishlistCount: wishlistCount,
+            cartCount: cartCount,
+            onSearchPressed: toggleSearch,
+            isSearching: isSearching,
+            searchQuery: searchQuery,
+            onSearchChanged: (value) {
+              setState(() {
+                searchQuery = value;
+              });
+            },
+          ),
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              if (state is CartWishlistLoading)
+                ShimmerLoading(), // Replace with ShimmerLoading if defined
+              if (state is CartWishlistSuccess) ...[
+                if (selectedIndex == 0) ...[
+                  if (!isSearching) ...[
+                    allproductstext(),
+                    allProductsDetails(state, filteredProducts),
+                  ] else ...[
+                    // Show search results when searching
+                    filteredProducts.isNotEmpty
+                        ? allProductsDetails(state, filteredProducts)
+                        : Center(
+                            child: Text(
+                              'No products found for "$searchQuery"',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 16.sp),
+                            ),
+                          ),
+                  ],
+                ],
+                if (selectedIndex == 1) WishlistScreen(),
+                if (selectedIndex == 2) CartScreen(),
+              ],
+              if (state is CartWishlistError)
+                Center(
+                    child: Text(state.error,
+                        style: TextStyle(color: Colors.white))),
+              Positioned(
+                bottom: 30.h,
+                left: 70.w,
+                right: 70.w,
+                child: Container(
+                  height: 55.h,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: const Color.fromARGB(62, 158, 158, 158),
+                      width: 1.0,
+                    ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(35.r)),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        CustomBottomNav(
+                          icon: Icons.home,
+                          isSelected: selectedIndex == 0,
+                          onTap: () => onSelected(0),
+                        ),
+                        CustomBottomNav(
+                          icon: Icons.favorite,
+                          isSelected: selectedIndex == 1,
+                          onTap: () => onSelected(1),
+                        ),
+                        CustomBottomNav(
+                          icon: Icons.shopping_cart,
+                          isSelected: selectedIndex == 2,
+                          onTap: () => onSelected(2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Positioned allproductstext() {
+    return Positioned(
+      top: 25.h,
+      left: 0,
+      right: 0,
+      child: Column(
+        children: [
+          Container(
+            height: 55.h,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadiusDirectional.only(
+                topEnd: Radius.circular(40),
+                topStart: Radius.circular(40),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                'All products',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Positioned allProductsDetails(
+      CartWishlistSuccess state, List<ProductModel> products) {
+    return Positioned(
+      top: 81.h,
+      left: 0,
+      right: 0,
+      bottom: 10.h,
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        color: Colors.white,
+        child: MasonryGridView.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 0,
+          crossAxisSpacing: 0,
+          itemCount: products.length,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            if (index < products.length) {
+              final product = products[index];
+              final isInWishlist =
+                  state.wishlist.any((item) => item.id == product.id);
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => ProductDetails(product: product),
+                    ),
+                  );
+                },
+                child: customeimageContainer(
+                    index, product, isInWishlist, context),
+              );
+            }
+            return Container();
+          },
+        ),
+      ),
+    );
+  }
+
+  Container customeimageContainer(int index, ProductModel product,
+      bool isInWishlist, BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(20.r)),
+        color: Colors.white,
+      ),
+      height: index % 2 == 0 ? 340.h : 380.h,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 5.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20.r),
+                  child: Image.network(
+                    product.image ?? '',
+                    height: index % 2 == 0 ? 230.h : 280.h,
+                    width: double.infinity,
+                    fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.error, size: 50.sp),
+                  ),
+                ),
+                Positioned(
+                  top: 8.h,
+                  left: 8.w,
+                  child: IconButton(
+                    icon: Icon(
+                      isInWishlist ? Icons.favorite : Icons.favorite_border,
+                      color: Colors.red,
+                      size: 24.sp,
+                    ),
+                    onPressed: () {
+                      if (isInWishlist) {
+                        context
+                            .read<CartWishlistBloc>()
+                            .add(RemoveFromWishlist(product));
+                      } else {
+                        context
+                            .read<CartWishlistBloc>()
+                            .add(AddToWishlist(product));
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              product.title!.length > 20
+                  ? '${product.title?.substring(0, 20)}...'
+                  : product.title ?? 'Unknown',
+              style: TextStyle(
+                  color: const Color.fromARGB(182, 0, 0, 0), fontSize: 14.sp),
+            ),
+            Text(
+              '\$${product.price}',
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            Text(
+              product.category ?? 'Uncategorized',
+              style: TextStyle(
+                color: const Color.fromARGB(182, 0, 0, 0),
+                fontSize: 12.sp,
+              ),
+            ),
+            Row(
+              children: [
+                Icon(Icons.star, color: Colors.yellow, size: 16.sp),
+                Text(
+                  '${product.rating.rate} (${product.rating.count})',
+                  style: TextStyle(fontSize: 12.sp),
+                ),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.add_shopping_cart, size: 20.sp),
+                  onPressed: () {
+                    context.read<CartWishlistBloc>().add(AddToCart(product));
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class ProductListScreen extends StatefulWidget {
-  @override
-  _ProductListScreenState createState() => _ProductListScreenState();
-}
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final int wishlistCount;
+  final int cartCount;
+  final VoidCallback onSearchPressed;
+  final bool isSearching;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
 
-class _ProductListScreenState extends State<ProductListScreen> {
-  late Future<List<Product>> futureProducts;
+  const CustomAppBar({
+    super.key,
+    required this.wishlistCount,
+    required this.cartCount,
+    required this.onSearchPressed,
+    required this.isSearching,
+    required this.searchQuery,
+    required this.onSearchChanged,
+  });
 
   @override
-  void initState() {
-    super.initState();
-    futureProducts = ApiService().fetchProducts();
-  }
+  Size get preferredSize =>
+      Size.fromHeight(isSearching ? 100.h : kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CartWishlistBloc, CartWishlistState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Products'),
-            actions: [
+    return AppBar(
+      leading: IconButton(
+        icon: Icon(
+          CupertinoIcons.search,
+          color: Colors.grey,
+          size: 24.sp,
+        ),
+        onPressed: onSearchPressed,
+      ),
+      backgroundColor: Colors.black,
+      elevation: 1,
+      title: isSearching
+          ? TextField(
+              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 16.sp),
+                border: InputBorder.none,
+              ),
+              onChanged: onSearchChanged,
+            )
+          : null,
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 8.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (!isSearching)
+                Text(
+                  "Royal Mart",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              SizedBox(width: 20.w),
               badges.Badge(
                 badgeContent: Text(
-                  state.wishlist.length.toString(),
-                  style: TextStyle(color: Colors.white),
+                  cartCount.toString(),
+                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
-                badgeStyle: badges.BadgeStyle(badgeColor: Colors.red),
+                badgeStyle: const badges.BadgeStyle(badgeColor: Colors.blue),
                 child: IconButton(
-                  icon: Icon(Icons.favorite),
+                  icon: Icon(
+                    CupertinoIcons.shopping_cart,
+                    color: Colors.green,
+                    size: 30.sp,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => WishlistScreen()),
+                      CupertinoPageRoute(builder: (context) => CartScreen()),
                     );
                   },
                 ),
               ),
+              SizedBox(width: 10.w),
               badges.Badge(
                 badgeContent: Text(
-                  state.cart.length.toString(),
-                  style: TextStyle(color: Colors.white),
+                  wishlistCount.toString(),
+                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
-                badgeStyle: badges.BadgeStyle(badgeColor: Colors.blue),
+                badgeStyle: const badges.BadgeStyle(badgeColor: Colors.red),
                 child: IconButton(
-                  icon: Icon(Icons.shopping_cart),
+                  icon: Icon(
+                    CupertinoIcons.heart,
+                    color: Colors.red,
+                    size: 30.sp,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CartScreen()),
+                      CupertinoPageRoute(
+                          builder: (context) => WishlistScreen()),
                     );
                   },
                 ),
               ),
+              SizedBox(width: 10.w),
             ],
           ),
-          body: FutureBuilder<List<Product>>(
-            future: futureProducts,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final product = snapshot.data![index];
-                    final isInWishlist =
-                        state.wishlist.any((item) => item.id == product.id);
-                    final isInCart =
-                        state.cart.any((item) => item.id == product.id);
-
-                    return ListTile(
-                      leading: Image.network(product.image, width: 50),
-                      title: Text(product.title),
-                      subtitle: Text('\$${product.price}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              isInWishlist
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: isInWishlist ? Colors.red : null,
-                            ),
-                            onPressed: () {
-                              if (isInWishlist) {
-                                context
-                                    .read<CartWishlistBloc>()
-                                    .add(RemoveFromWishlist(product));
-                              } else {
-                                context
-                                    .read<CartWishlistBloc>()
-                                    .add(AddToWishlist(product));
-                              }
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              isInCart
-                                  ? Icons.remove_shopping_cart
-                                  : Icons.add_shopping_cart,
-                            ),
-                            onPressed: () {
-                              if (isInCart) {
-                                context
-                                    .read<CartWishlistBloc>()
-                                    .add(RemoveFromCart(product));
-                              } else {
-                                context
-                                    .read<CartWishlistBloc>()
-                                    .add(AddToCart(product));
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-              return Center(child: CircularProgressIndicator());
-            },
-          ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
 
-class WishlistScreen extends StatelessWidget {
+class CustomBottomNav extends StatelessWidget {
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const CustomBottomNav({
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CartWishlistBloc, CartWishlistState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(title: Text('Wishlist')),
-          body: ListView.builder(
-            itemCount: state.wishlist.length,
-            itemBuilder: (context, index) {
-              final product = state.wishlist[index];
-              return ListTile(
-                leading: Image.network(product.image, width: 50),
-                title: Text(product.title),
-                subtitle: Text('\$${product.price}'),
-              );
-            },
-          ),
-        );
-      },
+    return IconButton(
+      icon: Icon(icon,
+          color: isSelected ? Colors.blue : Colors.grey, size: 24.sp),
+      onPressed: onTap,
     );
   }
 }
-
-class CartScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<CartWishlistBloc, CartWishlistState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(title: Text('Cart')),
-          body: ListView.builder(
-            itemCount: state.cart.length,
-            itemBuilder: (context, index) {
-              final product = state.cart[index];
-              return ListTile(
-                leading: Image.network(product.image, width: 50),
-                title: Text(product.title),
-                subtitle: Text('\$${product.price}'),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-
-
-
-
-
-
-
-

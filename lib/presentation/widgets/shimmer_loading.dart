@@ -54,8 +54,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading> {
             children: [
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
-                height: 250.h,
-                width: 180.w,
+                height: 240.h,
+                width: 200.w,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20.0),
@@ -63,7 +63,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading> {
               ),
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
-                height: 230.h,
+                height: 220.h,
                 width: 180.w,
                 decoration: BoxDecoration(
                   color: Colors.white,

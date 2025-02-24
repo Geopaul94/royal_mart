@@ -30,11 +30,11 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String url = 'https://fakestoreapi.com/products';
 
-  Future<List<Product>> fetchProducts() async {
+  Future<List<ProductModel>> fetchProducts() async {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Product.fromJson(json)).toList();
+      return data.map((json) => ProductModel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load products');
     }
