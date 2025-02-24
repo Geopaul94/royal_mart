@@ -16,6 +16,10 @@ import 'package:royalmart/presentation/screens/product_details.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/cupertino.dart';
 import 'package:royalmart/presentation/screens/wishlist_screen.dart';
+import 'package:royalmart/presentation/widgets/CustomBottomNav.dart';
+import 'package:royalmart/presentation/widgets/custom_addcart.dart';
+import 'package:royalmart/presentation/widgets/custome_appbar.dart';
+import 'package:royalmart/presentation/widgets/custome_likedt.dart';
 import 'package:royalmart/presentation/widgets/shimmer_loading.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -228,6 +232,8 @@ class _SamplescreenState extends State<Samplescreen> {
           itemBuilder: (context, index) {
             if (index < products.length) {
               final product = products[index];
+              final isIncart =
+                  state.cart.any((item) => item.id == product.id);
               final isInWishlist =
                   state.wishlist.any((item) => item.id == product.id);
               return GestureDetector(
@@ -240,7 +246,7 @@ class _SamplescreenState extends State<Samplescreen> {
                   );
                 },
                 child: customeimageContainer(
-                    index, product, isInWishlist, context),
+                    index, product, isIncart, isInWishlist, context),
               );
             }
             return Container();
@@ -251,13 +257,13 @@ class _SamplescreenState extends State<Samplescreen> {
   }
 
   Container customeimageContainer(int index, ProductModel product,
-      bool isInWishlist, BuildContext context) {
+      bool isIncart, bool isInWishlist, BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(20.r)),
         color: Colors.white,
       ),
-      height: index % 2 == 0 ? 340.h : 380.h,
+      height: index % 2 == 0 ? 360.h : 400.h,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 5.w),
         child: Column(
@@ -277,27 +283,24 @@ class _SamplescreenState extends State<Samplescreen> {
                   ),
                 ),
                 Positioned(
-                  top: 8.h,
-                  left: 8.w,
-                  child: IconButton(
-                    icon: Icon(
-                      isInWishlist ? Icons.favorite : Icons.favorite_border,
-                      color: Colors.red,
-                      size: 24.sp,
-                    ),
-                    onPressed: () {
-                      if (isInWishlist) {
-                        context
-                            .read<CartWishlistBloc>()
-                            .add(RemoveFromWishlist(product));
-                      } else {
-                        context
-                            .read<CartWishlistBloc>()
-                            .add(AddToWishlist(product));
-                      }
-                    },
-                  ),
-                ),
+                    top: 8.h,
+                    left: 8.w,
+                    child: CustomLikeButton(
+                      isLiked: isInWishlist,
+                      product: product,
+                    )),
+                Positioned(
+                  bottom: 8.h,
+                  right: 8.w,
+                  child:CustomAddcart(
+                      isIncart: isIncart,
+                      product: product,
+                    )),
+
+
+
+
+
               ],
             ),
             SizedBox(height: 10.h),
@@ -327,151 +330,11 @@ class _SamplescreenState extends State<Samplescreen> {
                   style: TextStyle(fontSize: 12.sp),
                 ),
                 Spacer(),
-                IconButton(
-                  icon: Icon(Icons.add_shopping_cart, size: 20.sp),
-                  onPressed: () {
-                    context.read<CartWishlistBloc>().add(AddToCart(product));
-                  },
-                ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final int wishlistCount;
-  final int cartCount;
-  final VoidCallback onSearchPressed;
-  final bool isSearching;
-  final String searchQuery;
-  final ValueChanged<String> onSearchChanged;
-
-  const CustomAppBar({
-    super.key,
-    required this.wishlistCount,
-    required this.cartCount,
-    required this.onSearchPressed,
-    required this.isSearching,
-    required this.searchQuery,
-    required this.onSearchChanged,
-  });
-
-  @override
-  Size get preferredSize =>
-      Size.fromHeight(isSearching ? 100.h : kToolbarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        icon: Icon(
-          CupertinoIcons.search,
-          color: Colors.grey,
-          size: 24.sp,
-        ),
-        onPressed: onSearchPressed,
-      ),
-      backgroundColor: Colors.black,
-      elevation: 1,
-      title: isSearching
-          ? TextField(
-              style: TextStyle(color: Colors.white, fontSize: 16.sp),
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 16.sp),
-                border: InputBorder.none,
-              ),
-              onChanged: onSearchChanged,
-            )
-          : null,
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 8.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (!isSearching)
-                Text(
-                  "Royal Mart",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              SizedBox(width: 20.w),
-              badges.Badge(
-                badgeContent: Text(
-                  cartCount.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
-                ),
-                badgeStyle: const badges.BadgeStyle(badgeColor: Colors.blue),
-                child: IconButton(
-                  icon: Icon(
-                    CupertinoIcons.shopping_cart,
-                    color: Colors.green,
-                    size: 30.sp,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(builder: (context) => CartScreen()),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(width: 10.w),
-              badges.Badge(
-                badgeContent: Text(
-                  wishlistCount.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
-                ),
-                badgeStyle: const badges.BadgeStyle(badgeColor: Colors.red),
-                child: IconButton(
-                  icon: Icon(
-                    CupertinoIcons.heart,
-                    color: Colors.red,
-                    size: 30.sp,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                          builder: (context) => WishlistScreen()),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(width: 10.w),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class CustomBottomNav extends StatelessWidget {
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const CustomBottomNav({
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon,
-          color: isSelected ? Colors.blue : Colors.grey, size: 24.sp),
-      onPressed: onTap,
     );
   }
 }

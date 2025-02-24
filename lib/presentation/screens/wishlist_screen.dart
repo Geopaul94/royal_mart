@@ -5,11 +5,6 @@ import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_event.dar
 
 import '../bloc/fetchproduct/fetchproducts_state.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
 class WishlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -31,14 +26,17 @@ class WishlistScreen extends StatelessWidget {
                   leading: Image.network(
                     product.image ?? '',
                     width: 50,
-                    errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.error),
                   ),
                   title: Text(product.title ?? 'Unknown'),
                   subtitle: Text('\$${product.price}'),
                   trailing: IconButton(
                     icon: Icon(Icons.remove),
                     onPressed: () {
-                      context.read<CartWishlistBloc>().add(RemoveFromWishlist(product));
+                      context
+                          .read<CartWishlistBloc>()
+                          .add(RemoveFromWishlist(product));
                     },
                   ),
                 );

@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_bloc.dart';
 import 'package:royalmart/presentation/bloc/fetchproduct/fetchproducts_event.dart';
 
 import '../bloc/fetchproduct/fetchproducts_state.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CartScreen extends StatelessWidget {
   @override
@@ -32,14 +27,17 @@ class CartScreen extends StatelessWidget {
                   leading: Image.network(
                     product.image ?? '',
                     width: 50,
-                    errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.error),
                   ),
                   title: Text(product.title ?? 'Unknown'),
                   subtitle: Text('\$${product.price}'),
                   trailing: IconButton(
                     icon: Icon(Icons.remove),
                     onPressed: () {
-                      context.read<CartWishlistBloc>().add(RemoveFromCart(product));
+                      context
+                          .read<CartWishlistBloc>()
+                          .add(RemoveFromCart(product));
                     },
                   ),
                 );
