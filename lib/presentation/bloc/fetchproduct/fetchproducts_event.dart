@@ -7,7 +7,9 @@ import 'package:royalmart/data/model/product_model.dart';
 @immutable
 abstract class CartWishlistEvent {}
 
-class LoadCartWishlist extends CartWishlistEvent {}
+class LoadCartWishlist extends CartWishlistEvent {
+  
+}
 
 class AddToWishlist extends CartWishlistEvent {
   final ProductModel product;

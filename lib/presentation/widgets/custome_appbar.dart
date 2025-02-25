@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:royalmart/presentation/screens/cart_screen.dart';
-import 'package:royalmart/presentation/screens/wishlist_screen.dart';
+import 'package:royalmart/presentation/screens/cartscreen/cart_screen.dart';
+import 'package:royalmart/presentation/screens/wishlistscreen/wishlist_screen.dart';
 
 import 'package:badges/badges.dart' as badges;
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {

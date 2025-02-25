@@ -92,7 +92,7 @@ class ProductDetails extends StatelessWidget {
                     color: Colors.white70,
                     fontSize: 14,
                   ),
-                  h150 
+                  h150
                 ],
               ),
             ),
