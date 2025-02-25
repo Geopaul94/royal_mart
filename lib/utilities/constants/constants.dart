@@ -7,7 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 const Color white = Colors.white;
-const Color red = Colors.red;
+const Color red = Colors.red;const Color green = Colors.green;
 const Color  arrowcolor =const Color.fromARGB(255, 142, 131, 131);const Color purple = Colors.purple;
 const buttoncolor = Color.fromARGB(255, 166, 31, 21);
 const Color black =Colors.black;
@@ -55,6 +55,8 @@ SizedBox h80 = SizedBox(height: 80.0.h);
 SizedBox h100 = SizedBox(height: 100.0.h); 
 
 // SizedBox for widths
+
+SizedBox w5 = SizedBox(width: 5.0.w);  
 SizedBox w10 = SizedBox(width: 10.0.w);  
 SizedBox w20 = SizedBox(width: 20.0.w); 
 SizedBox w30 = SizedBox(width: 30.0.w); 
