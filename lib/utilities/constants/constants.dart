@@ -53,14 +53,14 @@ SizedBox h15 = SizedBox(height: 15.0.h);
 SizedBox h50 = SizedBox(height: 50.0.h); 
 SizedBox h80 = SizedBox(height: 80.0.h); 
 SizedBox h100 = SizedBox(height: 100.0.h); 
-
+SizedBox h150 = SizedBox(height: 150.0.h); 
 // SizedBox for widths
 
 SizedBox w5 = SizedBox(width: 5.0.w);  
 SizedBox w10 = SizedBox(width: 10.0.w);  
 SizedBox w20 = SizedBox(width: 20.0.w); 
 SizedBox w30 = SizedBox(width: 30.0.w); 
-SizedBox w40 = SizedBox(width: 40.0.w); 
+SizedBox w40 = SizedBox(width: 40.0.w); SizedBox w50 = SizedBox(width: 50.0.w); 
 SizedBox kwidth = SizedBox(width: 10.0.w); 
 
 // Border radius

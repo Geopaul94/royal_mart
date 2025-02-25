@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return BlocProvider(
           create: (context) => CartWishlistBloc(),
-          child: MaterialApp(
+          child: MaterialApp(debugShowCheckedModeBanner: false,
             home: Samplescreen(),
           ),
         );
